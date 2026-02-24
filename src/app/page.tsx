@@ -253,50 +253,115 @@ export default function HomePage() {
             HERO — Split-screen (desktop) / Stacked (mobile)
         ══════════════════════════════════════ */}
         {isMobile ? (
-          /* ── MOBILE LAYOUT ── */
-          <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          /* ── PREMIUM MOBILE LAYOUT ── */
+          <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "#0a0a0a" }}>
 
-            {/* Mobile: Full-bleed image top */}
-            <div style={{ position: "relative", height: "60vh", flexShrink: 0, overflow: "hidden" }}>
+            {/* Mobile: Full-bleed hero — tall, cinematic */}
+            <div style={{ position: "relative", height: "78vh", flexShrink: 0, overflow: "hidden" }}>
+              {/* BG crossfade */}
               <AnimatePresence mode="sync">
                 <motion.div
                   key={active.heroImg}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={{ opacity: 0, scale: 1.06 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6 }}
+                  transition={{ duration: 0.7, ease: "easeInOut" }}
                   style={{ position: "absolute", inset: 0, backgroundImage: `url(${active.heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }}
                 />
               </AnimatePresence>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 60%)" }} />
 
-              {/* Mobile top bar */}
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 20 }}>
-                <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <img src="/logo.svg" alt="K" style={{ width: "20px", height: "24px", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
-                  <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.72rem", letterSpacing: "0.18em", color: "#fff", textTransform: "uppercase" }}>Kalaakars</span>
+              {/* Deep gradient — dark bottom for text legibility */}
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.35) 100%)" }} />
+
+              {/* ── TOP BAR ── */}
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "20px 22px", display: "flex", justifyContent: "space-between", alignItems: "center", zIndex: 20 }}>
+                <Link href="/" style={{ display: "flex", alignItems: "center", gap: "9px" }}>
+                  <img src="/logo.svg" alt="K" style={{ width: "22px", height: "26px", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+                  <span style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.75rem", letterSpacing: "0.2em", color: "#fff", textTransform: "uppercase" }}>Kalaakars</span>
                 </Link>
-                <button onClick={() => setNavOpen(true)} style={{ background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "4px", cursor: "pointer", padding: "9px 11px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                {/* Hamburger */}
+                <button
+                  onClick={() => setNavOpen(true)}
+                  style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: "50px", cursor: "pointer", padding: "9px 14px", display: "flex", flexDirection: "column", gap: "4px" }}
+                >
                   <div style={{ width: "18px", height: "1.5px", background: "#fff" }} />
-                  <div style={{ width: "18px", height: "1.5px", background: "#fff" }} />
-                  <div style={{ width: "12px", height: "1.5px", background: "#fff" }} />
+                  <div style={{ width: "14px", height: "1.5px", background: "rgba(255,255,255,0.6)" }} />
                 </button>
               </div>
 
-              {/* Studio name on image */}
-              <div style={{ position: "absolute", bottom: "20px", left: "20px", right: "20px", zIndex: 10 }}>
-                <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.6)", marginBottom: "6px" }}>{active.category} · {active.year}</p>
-                <div style={{ fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "clamp(2.5rem, 12vw, 5rem)", letterSpacing: "-0.04em", lineHeight: 0.88, color: "#fff" }}>KALAAKARS</div>
-                <div style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "clamp(0.8rem, 4vw, 1.2rem)", letterSpacing: "0.3em", color: "rgba(255,255,255,0.75)", textTransform: "uppercase", marginTop: "4px" }}>ARCHITECTURE</div>
+              {/* ── BOTTOM CONTENT BLOCK ── */}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 22px 28px", zIndex: 10 }}>
+                {/* Category pill */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeIdx + "-cat"}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.35 }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "100px", padding: "5px 12px", marginBottom: "14px" }}
+                  >
+                    <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#D4A520" }} />
+                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.9)", letterSpacing: "0.15em" }}>{active.category} · {active.year}</span>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Big studio name */}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeIdx + "-name"}
+                    initial={{ opacity: 0, y: 14 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <div style={{ fontFamily: "var(--font-sans)", fontWeight: 800, fontSize: "clamp(3rem, 14vw, 5.5rem)", letterSpacing: "-0.05em", lineHeight: 0.85, color: "#fff", textTransform: "uppercase" }}>
+                      KALAAKARS
+                    </div>
+                    <div style={{ fontFamily: "var(--font-sans)", fontWeight: 200, fontSize: "clamp(0.75rem, 3.5vw, 1rem)", letterSpacing: "0.42em", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", marginTop: "8px" }}>
+                      ARCHITECTURE
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* ── CTA PILLS — directly on image ── */}
+                <div style={{ display: "flex", gap: "10px", marginTop: "22px" }}>
+                  <Link href="/studio" style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "13px 16px",
+                    background: "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(12px)",
+                    color: "#111",
+                    fontFamily: "var(--font-sans)", fontSize: "0.78rem", fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    borderRadius: "6px",
+                    gap: "6px",
+                  }}>
+                    Studio Profile
+                  </Link>
+                  <Link href="/studio#contact" style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                    padding: "13px 16px",
+                    background: "rgba(20,20,20,0.65)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                    color: "#fff",
+                    fontFamily: "var(--font-sans)", fontSize: "0.78rem", fontWeight: 500,
+                    letterSpacing: "0.02em",
+                    borderRadius: "6px",
+                  }}>
+                    Free Consultation
+                  </Link>
+                </div>
               </div>
             </div>
 
-            {/* Mobile: Project list below image */}
-            <div style={{ flex: 1, background: "#fff" }}>
-              {/* CTA row */}
-              <div style={{ display: "flex", gap: "10px", padding: "16px 20px", borderBottom: "1px solid #EBEBEB" }}>
-                <Link href="/studio" style={{ flex: 1, padding: "10px", background: "#111", color: "#fff", fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: 500, textAlign: "center" as const, borderRadius: "3px" }}>Studio Profile</Link>
-                <Link href="/studio#contact" style={{ flex: 1, padding: "10px", border: "1px solid #DDD", color: "#111", fontFamily: "var(--font-sans)", fontSize: "0.75rem", fontWeight: 500, textAlign: "center" as const, borderRadius: "3px" }}>Free Consultation</Link>
+            {/* Mobile: Project list — premium dark style */}
+            <div style={{ flex: 1, background: "#0a0a0a" }}>
+
+              {/* Section header */}
+              <div style={{ padding: "22px 22px 16px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.22em" }}>SELECTED WORKS — {PROJECTS.length} PROJECTS</p>
               </div>
 
               {/* Project rows */}
@@ -304,22 +369,60 @@ export default function HomePage() {
                 {PROJECTS.map((p, i) => {
                   const isActive = activeIdx === i;
                   return (
-                    <div
+                    <motion.div
                       key={p.id}
                       onClick={() => setActiveIdx(i)}
-                      style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 20px", borderBottom: "1px solid #F0F0F0", borderLeft: isActive ? "3px solid #111" : "3px solid transparent", cursor: "pointer", background: isActive ? "#FAFAFA" : "transparent" }}
+                      whileTap={{ scale: 0.985 }}
+                      style={{
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                        padding: "16px 22px",
+                        borderBottom: "1px solid rgba(255,255,255,0.06)",
+                        borderLeft: isActive ? "3px solid #D4A520" : "3px solid transparent",
+                        cursor: "pointer",
+                        background: isActive ? "rgba(255,255,255,0.04)" : "transparent",
+                        transition: "background 0.2s, border-color 0.2s",
+                        gap: "14px",
+                      }}
                     >
-                      <div>
-                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "#BBB", marginBottom: "4px" }}>{p.num}</p>
-                        <Link href={`/projects/${p.slug}`} style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "1.25rem", letterSpacing: "-0.03em", color: isActive ? "#111" : "#666" }}>
+                      {/* Left: number + title + location */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", color: isActive ? "#D4A520" : "rgba(255,255,255,0.25)", marginBottom: "5px", letterSpacing: "0.12em", transition: "color 0.25s" }}>{p.num}</p>
+                        <Link
+                          href={`/projects/${p.slug}`}
+                          style={{
+                            fontFamily: "var(--font-sans)", fontWeight: 400,
+                            fontSize: "1.2rem", letterSpacing: "-0.03em",
+                            color: isActive ? "#fff" : "rgba(255,255,255,0.55)",
+                            display: "block", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                            transition: "color 0.3s",
+                          }}
+                        >
                           {p.title.split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" ")}
                         </Link>
+                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", color: "rgba(255,255,255,0.25)", marginTop: "4px", letterSpacing: "0.1em" }}>{p.location} · {p.year}</p>
                       </div>
-                      <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "#CCC" }}>{p.location.split(",")[0]}</span>
-                    </div>
+                      {/* Right: thumbnail */}
+                      <div style={{ width: "60px", height: "60px", borderRadius: "4px", overflow: "hidden", flexShrink: 0, opacity: isActive ? 1 : 0.45, transition: "opacity 0.3s" }}>
+                        <motion.img
+                          src={p.heroImg}
+                          alt={p.title}
+                          animate={{ scale: isActive ? 1 : 1.05 }}
+                          transition={{ duration: 0.5 }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      </div>
+                    </motion.div>
                   );
                 })}
               </nav>
+
+              {/* Browse all link */}
+              <div style={{ padding: "24px 22px" }}>
+                <Link href="/index" style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.35)", display: "inline-flex", alignItems: "center", gap: "10px" }}>
+                  VIEW ALL PROJECTS
+                  <svg width="16" height="6" viewBox="0 0 20 8" fill="none"><path d="M0 4H18M15 1l3 3-3 3" stroke="currentColor" strokeWidth="1" /></svg>
+                </Link>
+              </div>
             </div>
           </div>
 
