@@ -1,169 +1,241 @@
 "use client";
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PROJECTS } from "@/lib/data";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Navbar } from "@/components/sections/Navbar";
-import { Footer } from "@/components/sections/Footer";
+import Link from "next/link";
 
-export default function ProjectDetail() {
-    const { id } = useParams();
+/* ===== NAVBAR ===== */
+function Navbar({ dark = false }: { dark?: boolean }) {
+    const c = "#fff";
+    return (
+        <header style={{
+            position: "fixed", top: 0, left: 0, right: 0, zIndex: 9000,
+            padding: "28px 40px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <img src="/logo.svg" alt="K" style={{ width: "28px", height: "28px", filter: "brightness(0) invert(1)" }} />
+                <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.85rem", letterSpacing: "0.15em", color: c, textTransform: "uppercase" }}>
+                    Kalaakars
+                </span>
+            </Link>
+            <nav style={{ display: "flex", gap: "36px" }}>
+                {[["PROJECTS", "/"], ["STUDIO", "/studio"], ["INDEX", "/index"]].map(([l, h]) => (
+                    <Link key={l} href={h} style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.15em", color: c, opacity: 0.7 }}>{l}</Link>
+                ))}
+            </nav>
+        </header>
+    );
+}
+
+/* ===== FOOTER ===== */
+function Footer() {
+    return (
+        <footer style={{ padding: "80px 40px 60px", borderTop: "1px solid #EBEBEB" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                <div>
+                    <p className="u-label" style={{ marginBottom: "20px" }}>Contact</p>
+                    <a href="mailto:hello@kalaakars.in" style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "1.4rem", letterSpacing: "-0.02em" }}>
+                        hello@kalaakars.in
+                    </a>
+                </div>
+                <div style={{ display: "flex", gap: "40px" }}>
+                    {["Instagram", "LinkedIn", "Behance"].map(s => (
+                        <a key={s} href="#" className="u-mono" style={{ color: "#999" }}>{s}</a>
+                    ))}
+                </div>
+            </div>
+            <div style={{ marginTop: "60px", paddingTop: "30px", borderTop: "1px solid #F0F0F0", display: "flex", justifyContent: "space-between" }}>
+                <span className="u-label">© 2024 Kalaakars Architecture Studio</span>
+                <span className="u-label">Mumbai, India</span>
+            </div>
+        </footer>
+    );
+}
+
+/* ===== PROJECT DETAIL PAGE ===== */
+export default function ProjectPage() {
+    const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const project = PROJECTS.find((p) => p.id === id);
+    const project = PROJECTS.find(p => p.slug === id);
+    const projectIdx = PROJECTS.findIndex(p => p.slug === id);
+    const nextProject = PROJECTS[(projectIdx + 1) % PROJECTS.length];
 
+    const heroRef = useRef<HTMLDivElement>(null);
     const { scrollY } = useScroll();
-    const yHero = useTransform(scrollY, [0, 1000], [0, 400]);
-    const opacityHero = useTransform(scrollY, [0, 800], [1, 0]);
+    const heroY = useTransform(scrollY, [0, 900], [0, 280]);
+    const heroOpacity = useTransform(scrollY, [0, 700], [1, 0.2]);
 
-    if (!project) return <div>Project not found</div>;
+    if (!project) return <div style={{ padding: "200px 40px" }}>Project not found.</div>;
 
     return (
-        <main style={{ background: "#FFF", minHeight: "100vh" }}>
-            <Navbar />
-
-            {/* 1. Hero Section - Metrica Style */}
-            <section style={{ height: "100vh", position: "relative", overflow: "hidden" }}>
+        <main style={{ background: "#fff" }}>
+            {/* 1. FULL-SCREEN HERO */}
+            <section ref={heroRef} style={{ height: "100vh", position: "relative", overflow: "hidden" }}>
+                <Navbar dark />
                 <motion.div
                     style={{
-                        height: "140%",
-                        width: "100%",
-                        y: yHero,
+                        position: "absolute", inset: 0,
                         backgroundImage: `url(${project.heroImg})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        opacity: opacityHero
+                        backgroundSize: "cover", backgroundPosition: "center",
+                        y: heroY, opacity: heroOpacity,
+                        willChange: "transform",
                     }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(255,255,255,0.4), transparent 50%)" }} />
-            </section>
-
-            {/* 2. Massive Title Block */}
-            <section style={{ padding: "100px 5% 60px", background: "#FFF" }}>
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                    viewport={{ once: true }}
-                >
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", letterSpacing: "0.5em", color: "#666", display: "block", marginBottom: "30px" }}>
-                        {project.location} — {project.year}
-                    </span>
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)" }} />
+                <div style={{ position: "absolute", bottom: "60px", left: "40px", right: "40px", color: "#fff" }}>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.18em", opacity: 0.7, marginBottom: "16px" }}>
+                        {project.category} — {project.location} — {project.year}
+                    </p>
                     <h1 style={{
-                        fontFamily: "var(--font-display)",
-                        fontSize: "clamp(3.5rem, 12vw, 10rem)",
-                        lineHeight: 0.85,
-                        letterSpacing: "-0.05em",
-                        fontWeight: 400,
-                        textTransform: "uppercase",
-                        margin: 0
+                        fontFamily: "var(--font-sans)", fontWeight: 400,
+                        fontSize: "clamp(3rem, 8vw, 7rem)",
+                        letterSpacing: "-0.04em", lineHeight: 0.88,
                     }}>
                         {project.title}
                     </h1>
-                </motion.div>
+                </div>
             </section>
 
-            {/* 3. Narrative Section */}
-            <section style={{ padding: "120px 5%", display: "grid", gridTemplateColumns: "1fr 1.5fr", gap: "100px", borderTop: "1px solid #EEE" }}>
+            {/* 2. INTRO TEXT */}
+            <section style={{ padding: "120px 40px", display: "grid", gridTemplateColumns: "1fr 1.6fr", gap: "80px", borderBottom: "1px solid #EBEBEB" }}>
                 <div>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.4em", color: "#666", textTransform: "uppercase" }}>THE PHILOSOPHY</span>
+                    <Reveal>
+                        <p className="u-label" style={{ marginBottom: "28px" }}>The Concept</p>
+                        <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "clamp(1.8rem, 3vw, 2.8rem)", letterSpacing: "-0.04em", lineHeight: 1.1, color: "#111" }}>
+                            {project.subtitle}
+                        </h2>
+                    </Reveal>
                 </div>
-                <div>
-                    <p style={{ fontFamily: "var(--font-body)", color: "#121212", fontSize: "1.5rem", lineHeight: 1.5, letterSpacing: "-0.02em", maxWidth: "800px" }}>
-                        {project.story}
-                    </p>
-                    {project.storySecondary && (
-                        <p style={{ fontFamily: "var(--font-body)", color: "#666", fontSize: "1.1rem", lineHeight: 1.7, marginTop: "40px", maxWidth: "600px" }}>
-                            {project.storySecondary}
+                <div style={{ display: "flex", alignItems: "flex-end" }}>
+                    <Reveal delay={0.15}>
+                        <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "1.25rem", lineHeight: 1.65, color: "#444" }}>
+                            {project.story}
                         </p>
-                    )}
+                    </Reveal>
                 </div>
             </section>
 
-            {/* 4. Gallery Section - Metrica Staggered */}
-            <section style={{ padding: "0 2.5%" }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-                    {project.gallery.map((img, i) => {
-                        const isFull = img.type === "full";
-                        return (
-                            <div
-                                key={i}
-                                style={{
-                                    flex: isFull ? "0 0 100%" : "0 0 calc(50% - 10px)",
-                                    height: isFull ? "110vh" : "80vh",
-                                    overflow: "hidden",
-                                    marginBottom: "10px"
-                                }}
-                            >
-                                <motion.img
-                                    initial={{ scale: 1.1 }}
-                                    whileInView={{ scale: 1 }}
-                                    transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-                                    src={img.src}
-                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
-                            </div>
-                        );
-                    })}
-                </div>
-            </section>
-
-            {/* 5. Specs Section - Metrica Style */}
-            <section style={{ padding: "160px 5%", background: "#FFF" }}>
-                <div style={{ borderTop: "1.5px solid #000", paddingTop: "40px" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "100px" }}>
-                        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "0.8rem", letterSpacing: "0.5em", color: "#121212", textTransform: "uppercase" }}>TECHNICAL SPECS</h2>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "x: 40px", rowGap: "40px" }}>
-                            {project.specs.map((spec, i) => (
-                                <div key={i}>
-                                    <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.2em", color: "#AAA", marginBottom: "8px", textTransform: "uppercase" }}>{spec.label}</div>
-                                    <div style={{ fontFamily: "var(--font-body)", fontSize: "1rem", color: "#121212" }}>{spec.value}</div>
+            {/* 3. GALLERY */}
+            <section style={{ padding: "0" }}>
+                {(() => {
+                    const rows: React.ReactNode[] = [];
+                    let i = 0;
+                    while (i < project.gallery.length) {
+                        const img = project.gallery[i];
+                        if (img.span === "full") {
+                            rows.push(
+                                <GalleryImg key={i} src={img.src} height="90vh" />
+                            );
+                            i++;
+                        } else {
+                            // pair halves
+                            const next = project.gallery[i + 1];
+                            rows.push(
+                                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0" }}>
+                                    <GalleryImg src={img.src} height="80vh" />
+                                    {next ? <GalleryImg src={next.src} height="80vh" /> : <div />}
                                 </div>
-                            ))}
+                            );
+                            i += 2;
+                        }
+                    }
+                    return rows;
+                })()}
+            </section>
+
+            {/* 4. PULL QUOTE */}
+            {project.pullQuote && (
+                <section style={{ padding: "120px 40px", borderTop: "1px solid #EBEBEB" }}>
+                    <Reveal>
+                        <blockquote style={{
+                            fontFamily: "var(--font-sans)", fontWeight: 300,
+                            fontSize: "clamp(1.8rem, 4vw, 3.5rem)",
+                            letterSpacing: "-0.04em", lineHeight: 1.15,
+                            color: "#111", maxWidth: "900px"
+                        }}>
+                            "{project.pullQuote}"
+                        </blockquote>
+                    </Reveal>
+                </section>
+            )}
+
+            {/* 5. TECHNICAL SPECS */}
+            <section style={{ padding: "80px 40px 120px", borderTop: "1px solid #EBEBEB" }}>
+                <p className="u-label" style={{ marginBottom: "60px" }}>Technical Specifications</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px 60px" }}>
+                    {project.specs.map((spec) => (
+                        <div key={spec.label} style={{ borderTop: "1px solid #EBEBEB", paddingTop: "20px" }}>
+                            <p className="u-label" style={{ marginBottom: "10px" }}>{spec.label}</p>
+                            <p style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "1rem", color: "#111" }}>{spec.value}</p>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </section>
 
-            {/* 6. Next Project Portal - Metrica Style */}
+            {/* 6. NEXT PROJECT PORTAL */}
             <section
-                onClick={() => {
-                    const nextIdx = (PROJECTS.indexOf(project) + 1) % PROJECTS.length;
-                    router.push(`/projects/${PROJECTS[nextIdx].id}`);
-                }}
-                className="interactive"
-                style={{ height: "90vh", position: "relative", cursor: "pointer", overflow: "hidden", margin: "0 20px 20px" }}
+                onClick={() => router.push(`/projects/${nextProject.slug}`)}
+                style={{ position: "relative", height: "85vh", cursor: "pointer", overflow: "hidden" }}
             >
                 <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.8 }}
+                    whileHover={{ scale: 1.04 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                     style={{
-                        position: "absolute",
-                        inset: 0,
-                        backgroundImage: `url(${PROJECTS[(PROJECTS.indexOf(project) + 1) % PROJECTS.length].heroImg})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center"
+                        position: "absolute", inset: 0,
+                        backgroundImage: `url(${nextProject.heroImg})`,
+                        backgroundSize: "cover", backgroundPosition: "center",
                     }}
                 />
-                <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", letterSpacing: "0.5em", color: "#FFF", marginBottom: "30px" }}>NEXT PROJECT</span>
+                <div style={{
+                    position: "absolute", inset: 0,
+                    background: "rgba(0,0,0,0.42)",
+                    display: "flex", flexDirection: "column",
+                    alignItems: "center", justifyContent: "center",
+                    color: "#fff"
+                }}>
+                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.3em", marginBottom: "24px", opacity: 0.7 }}>NEXT PROJECT</p>
                     <h2 style={{
-                        fontFamily: "var(--font-display)",
-                        fontSize: "clamp(3rem, 8vw, 6rem)",
-                        color: "#FFF",
-                        textTransform: "uppercase",
+                        fontFamily: "var(--font-sans)", fontWeight: 400,
+                        fontSize: "clamp(2.4rem, 7vw, 6rem)",
                         letterSpacing: "-0.04em",
-                        fontWeight: 400
                     }}>
-                        {PROJECTS[(PROJECTS.indexOf(project) + 1) % PROJECTS.length].title}
+                        {nextProject.title}
                     </h2>
                 </div>
             </section>
 
             <Footer />
-
-            <style jsx global>{`
-        body { background: #FFF !important; }
-      `}</style>
         </main>
+    );
+}
+
+/* ===== HELPERS ===== */
+function GalleryImg({ src, height }: { src: string; height: string }) {
+    return (
+        <div style={{ height, overflow: "hidden" }}>
+            <motion.img
+                initial={{ scale: 1.08 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                src={src}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+        </div>
+    );
+}
+
+function Reveal({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+        >
+            {children}
+        </motion.div>
     );
 }
