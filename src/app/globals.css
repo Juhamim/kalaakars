@@ -4,7 +4,6 @@
   --font-sans: 'Outfit', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
 }
 
 *,
@@ -18,6 +17,7 @@
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -47,7 +47,7 @@ button {
   cursor: pointer;
 }
 
-/* ===== SCROLLBAR ===== */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 3px;
 }
@@ -57,10 +57,10 @@ button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: #ddd;
 }
 
-/* ===== UTILITY ===== */
+/* ─── UTILITIES ─── */
 .u-mono {
   font-family: var(--font-mono);
   font-size: 0.65rem;
@@ -76,14 +76,98 @@ button {
   color: #999;
 }
 
-/* ===== REVEAL ===== */
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.9s var(--ease-expo), transform 0.9s var(--ease-expo);
+/* ─── RESPONSIVE GRID HELPERS ─── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
 }
 
-.reveal.in {
-  opacity: 1;
-  transform: none;
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 60px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+}
+
+.grid-1-15 {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 100px;
+}
+
+.grid-1-16 {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 80px;
+}
+
+@media (max-width: 768px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .grid-4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .grid-1-15 {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .grid-1-16 {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+/* ─── SECTION PADDING ─── */
+.section-pad {
+  padding: 120px 40px;
+}
+
+.section-pad-s {
+  padding: 80px 40px;
+}
+
+@media (max-width: 768px) {
+  .section-pad {
+    padding: 72px 20px;
+  }
+
+  .section-pad-s {
+    padding: 48px 20px;
+  }
+}
+
+/* ─── HIDE/SHOW ─── */
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
 }
