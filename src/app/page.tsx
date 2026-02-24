@@ -65,7 +65,7 @@ function NavOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
                   <Link
                     href={link.href}
                     onClick={onClose}
-                    style={{ textDecoration: "none", display: "flex", alignItems: "baseline", gap: "28px", paddingBottom: "24px", marginBottom: "8px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex" }}
+                    style={{ textDecoration: "none", display: "flex", alignItems: "baseline", gap: "28px", paddingBottom: "24px", marginBottom: "8px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
                   >
                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>{link.num}</span>
                     <span style={{
