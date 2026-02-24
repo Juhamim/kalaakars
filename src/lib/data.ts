@@ -8,7 +8,6 @@ export interface Project {
     location: string;
     year: string;
     heroImg: string;
-    coverImg: string;
     gallery: { src: string; span: "full" | "half" }[];
     specs: { label: string; value: string }[];
     story: string;
@@ -23,10 +22,9 @@ export const PROJECTS: Project[] = [
         title: "GRAND RIDGE DRIVE",
         subtitle: "Residential",
         category: "RESIDENTIAL",
-        location: "MUMBAI, IN",
+        location: "CALICUT, KL",
         year: "2024",
         heroImg: "https://images.unsplash.com/photo-1600585154340-be6199f7c096?q=80&w=2400&auto=format&fit=crop",
-        coverImg: "https://images.unsplash.com/photo-1600585154340-be6199f7c096?q=80&w=2400&auto=format&fit=crop",
         gallery: [
             { src: "https://images.unsplash.com/photo-1600607687939-ce8a6c349fbd?q=80&w=2400&auto=format&fit=crop", span: "half" },
             { src: "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2400&auto=format&fit=crop", span: "half" },
@@ -42,7 +40,7 @@ export const PROJECTS: Project[] = [
             { label: "Year", value: "2024" },
             { label: "Principal", value: "Ar. Vishal Sharma" },
         ],
-        story: `Located on a prominent ridge overlooking Mumbai's coastline, this residence dissolves the boundary between architecture and landscape. Every decision — from the orientation of the primary volume to the precise position of each aperture — was made in service of framing views and managing light.`,
+        story: `Located on a prominent ridge in Calicut's hilly terrain, this residence dissolves the boundary between architecture and the lush Kerala landscape. Every decision — from the orientation of the primary volume to the placement of each aperture — was made in service of framing the Malabar coastline and managing the monsoon light.`,
         pullQuote: "Architecture is not about form. It is about the nature of space.",
     },
     {
@@ -52,10 +50,9 @@ export const PROJECTS: Project[] = [
         title: "VOID ATRIUM",
         subtitle: "Commercial",
         category: "COMMERCIAL",
-        location: "DUBAI, UAE",
+        location: "KOZHIKODE, KL",
         year: "2024",
         heroImg: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2400&auto=format&fit=crop",
-        coverImg: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2400&auto=format&fit=crop",
         gallery: [
             { src: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2400&auto=format&fit=crop", span: "full" },
             { src: "https://images.unsplash.com/photo-1497366412874-3415097a27e7?q=80&w=2400&auto=format&fit=crop", span: "half" },
@@ -63,26 +60,25 @@ export const PROJECTS: Project[] = [
         ],
         specs: [
             { label: "Status", value: "In Progress" },
-            { label: "Client", value: "NeoCorp" },
+            { label: "Client", value: "Private" },
             { label: "Program", value: "Mixed-Use Commercial" },
             { label: "Area", value: "22,000 sq.ft" },
             { label: "Year", value: "2025" },
             { label: "Principal", value: "Ar. Ayaan Kapoor" },
         ],
-        story: `Void Atrium reimagines the modern workspace as a sanctuary of light. By hollowing out the core of a six-story structure, we've created a vertical landscape that breathes, adapts to the arc of the sun, and fundamentally redefines the relationship between individual and collective space.`,
+        story: `Set in the heart of Kozhikode's urban fabric, Void Atrium reimagines the modern workspace as a sanctuary of light informed by Kerala's deep tradition of courtyard architecture — the nalukettu. By hollowing out the core of a six-story structure, we've created a vertical landscape that breathes with the monsoon and adapts to the arc of the sun.`,
         pullQuote: "The void is the most powerful architectural element.",
     },
     {
         id: "03",
-        slug: "observatory-hill",
+        slug: "malabar-house",
         num: "03",
-        title: "OBSERVATORY HILL",
+        title: "MALABAR HOUSE",
         subtitle: "Cultural",
         category: "CULTURAL",
-        location: "BANGALORE, IN",
+        location: "CALICUT, KL",
         year: "2025",
         heroImg: "https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?q=80&w=2400&auto=format&fit=crop",
-        coverImg: "https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?q=80&w=2400&auto=format&fit=crop",
         gallery: [
             { src: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=2400&auto=format&fit=crop", span: "half" },
             { src: "https://images.unsplash.com/photo-1560840067-ddcaeb7831d2?q=80&w=2400&auto=format&fit=crop", span: "half" },
@@ -90,26 +86,25 @@ export const PROJECTS: Project[] = [
         ],
         specs: [
             { label: "Status", value: "Design Development" },
-            { label: "Client", value: "City of Bangalore" },
+            { label: "Client", value: "City of Calicut" },
             { label: "Program", value: "Public Cultural Center" },
             { label: "Area", value: "48,000 sq.ft" },
             { label: "Year", value: "2025" },
             { label: "Principal", value: "Ar. Vishal Sharma" },
         ],
-        story: `Observatory Hill is a cultural center conceived as a topographic instrument — a building that makes the invisible visible. Its form is derived from the study of light, sound, and sight lines across the city, resulting in a structure that functions simultaneously as landmark, archive, and public gathering space.`,
-        pullQuote: "To observe is to participate.",
+        story: `Malabar House is a cultural center conceived as an instrument of the Kerala coast — a building that makes the invisible traditions of Malabar visible. Its form is derived from the study of monsoon light, trade wind patterns, and the historic spice routes of Kozhikode, resulting in a structure that functions simultaneously as landmark, archive, and public gathering space.`,
+        pullQuote: "To build in Kerala is to listen to the monsoon first.",
     },
     {
         id: "04",
-        slug: "lakeside-pavilion",
+        slug: "kochi-waterfront",
         num: "04",
-        title: "LAKESIDE PAVILION",
+        title: "KOCHI WATERFRONT",
         subtitle: "Landscape",
         category: "LANDSCAPE",
-        location: "UDAIPUR, IN",
+        location: "KOCHI, KL",
         year: "2024",
         heroImg: "https://images.unsplash.com/photo-1449156001437-3a1f93977c71?q=80&w=2400&auto=format&fit=crop",
-        coverImg: "https://images.unsplash.com/photo-1449156001437-3a1f93977c71?q=80&w=2400&auto=format&fit=crop",
         gallery: [
             { src: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=2400&auto=format&fit=crop", span: "full" },
             { src: "https://images.unsplash.com/photo-1600567026023-9f17e27dcaf6?q=80&w=2400&auto=format&fit=crop", span: "half" },
@@ -123,7 +118,7 @@ export const PROJECTS: Project[] = [
             { label: "Year", value: "2024" },
             { label: "Principal", value: "Ar. Ayaan Kapoor" },
         ],
-        story: `Situated at the edge of Udaipur's Pichola Lake, this pavilion is an act of extreme restraint. The structure presents the minimum necessary mass to provide shelter and frame the water, operating more as a threshold than a building — a delicate mediator between the human and the sublime.`,
+        story: `Situated at the edge of Fort Kochi's backwaters, this pavilion is an act of extreme restraint. Drawing from the Chinese fishing nets and Portuguese fort heritage of the Kerala coast, the structure presents the minimum necessary mass to provide shelter and frame the water — a delicate mediator between the human body and the Arabian Sea.`,
         pullQuote: "The best building is the one you don't see.",
     },
 ];

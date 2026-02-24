@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kalaakars — Architecture Studio",
-  description: "Kalaakars is a boutique architecture studio based in Mumbai, India. We design structures that transcend gravity and redefine spatial reality.",
+  title: "Kalaakars — Architecture Studio | Calicut, Kerala",
+  description: "Kalaakars is a boutique architecture studio based in Calicut (Kozhikode), Kerala. We design structures rooted in the Malabar spirit — where monsoon light, material honesty, and spatial transcendence meet.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

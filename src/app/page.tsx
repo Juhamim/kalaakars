@@ -31,7 +31,7 @@ function Navbar({ dark = false }: { dark?: boolean }) {
       }}
     >
       <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <img src="/logo.svg" alt="K" style={{ width: "28px", height: "28px", objectFit: "contain" }} />
+        <img src="/logo.svg" alt="K" style={{ width: "28px", height: "32px", objectFit: "contain" }} />
         <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.85rem", letterSpacing: "0.15em", color: c, textTransform: "uppercase" }}>
           Kalaakars
         </span>
@@ -120,7 +120,7 @@ function HeroProjectList() {
                     </div>
                     <div style={{
                       fontFamily: "var(--font-mono)", fontSize: "0.6rem",
-                      letterSpacing: "0.18em", opacity: 0.5, marginTop: "6px",
+                      letterSpacing: "0.18em", marginTop: "6px",
                       opacity: isHovered ? 0.7 : 0.4, transition: "opacity 0.4s"
                     }}>
                       {p.subtitle}
@@ -154,7 +154,7 @@ function StudioIntro() {
       </div>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
         <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "1.15rem", lineHeight: 1.7, color: "#444", maxWidth: "520px" }}>
-          Kalaakars is a Mumbai-based studio working at the intersection of material honesty and structural innovation. We design residences, cultural buildings, and landscapes for clients who understand that less, done precisely, is more.
+          Kalaakars is a Calicut-based studio working at the intersection of Kerala's spatial traditions and structural innovation. From the Malabar coast to the highlands of Wayanad, we design residences, cultural buildings, and landscapes rooted in the monsoon landscape of Kerala.
         </p>
         <Link href="/studio" style={{ marginTop: "48px", display: "inline-flex", alignItems: "center", gap: "12px", fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.15em", color: "#111" }}>
           <span>STUDIO PROFILE</span>
@@ -186,7 +186,7 @@ function HomeFooter() {
       </div>
       <div style={{ marginTop: "80px", paddingTop: "30px", borderTop: "1px solid #F0F0F0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span className="u-label">© 2024 Kalaakars Architecture Studio</span>
-        <span className="u-label">Mumbai, India</span>
+        <span className="u-label">Calicut (Kozhikode), Kerala</span>
       </div>
     </footer>
   );

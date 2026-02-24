@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" fill="none">
-  <!-- Upper arm: large right-pointing triangle -->
-  <polygon points="10,5 90,5 10,65" fill="#D4A520"/>
-  <!-- Lower arm: smaller triangle in bottom-right -->
-  <polygon points="45,72 90,115 10,115" fill="#D4A520"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 560">
+  <!-- Upper large triangle: spine (left col) + upper diagonal arm going top-right -->
+  <polygon points="60,30 400,30 60,290" fill="#D4A520"/>
+  <!-- Lower small triangle: lower diagonal arm going bottom-right -->
+  <polygon points="195,320 400,530 60,530" fill="#D4A520"/>
 </svg>
