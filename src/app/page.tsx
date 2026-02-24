@@ -1,207 +1,290 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { PROJECTS } from "@/lib/data";
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
-/* ==============================
-   NAVBAR
-============================== */
-function Navbar({ dark = false }: { dark?: boolean }) {
-  const [hidden, setHidden] = useState(false);
-  const [lastY, setLastY] = useState(0);
-  const { scrollY } = useScroll();
+/* ─────────────────────────────────────────────────────────
+   METRICA EXACT REPLICA — Split-Screen Homepage
+   LEFT: white project list  /  RIGHT: full-bleed image panel
+───────────────────────────────────────────────────────── */
 
-  useMotionValueEvent(scrollY, "change", (y) => {
-    setHidden(y > lastY && y > 120);
-    setLastY(y);
-  });
+export default function HomePage() {
+  // Index 0 is active by default (like Metrica: "Clyde Hill")
+  const [activeIdx, setActiveIdx] = useState(0);
 
-  const c = dark ? "#fff" : "#111";
+  const active = PROJECTS[activeIdx];
 
   return (
-    <motion.header
-      animate={{ y: hidden ? -100 : 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 9000,
-        padding: "28px 40px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        pointerEvents: "auto",
-      }}
-    >
-      <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <img src="/logo.svg" alt="K" style={{ width: "28px", height: "32px", objectFit: "contain" }} />
-        <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.85rem", letterSpacing: "0.15em", color: c, textTransform: "uppercase" }}>
-          Kalaakars
-        </span>
-      </Link>
+    <main style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#fff" }}>
 
-      <nav style={{ display: "flex", gap: "36px", alignItems: "center" }}>
-        {[["PROJECTS", "/#projects"], ["STUDIO", "/studio"], ["INDEX", "/index"]].map(([label, href]) => (
-          <Link key={label} href={href} style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.15em", color: c, opacity: 0.7 }}>
-            {label}
+      {/* ════════════════════════════════
+          LEFT PANEL — Project List
+      ════════════════════════════════ */}
+      <aside style={{
+        width: "320px",
+        minWidth: "260px",
+        maxWidth: "340px",
+        flexShrink: 0,
+        background: "#fff",
+        display: "flex",
+        flexDirection: "column",
+        overflowY: "auto",
+        zIndex: 10,
+      }}>
+        {/* Logo top-left */}
+        <div style={{ padding: "28px 32px 0" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "9px", textDecoration: "none" }}>
+            <img src="/logo.svg" alt="K" style={{ width: "24px", height: "28px", objectFit: "contain" }} />
+            <span style={{
+              fontFamily: "var(--font-sans)", fontWeight: 700, fontSize: "0.78rem",
+              letterSpacing: "0.18em", color: "#111", textTransform: "uppercase",
+            }}>
+              Kalaakars
+            </span>
           </Link>
-        ))}
-      </nav>
-    </motion.header>
-  );
-}
+        </div>
 
-/* ==============================
-   HERO — Metrica: vertical project list with bg reveal
-============================== */
-function HeroProjectList() {
-  const [activeIdx, setActiveIdx] = useState<number | null>(null);
+        {/* Project List */}
+        <nav style={{ flex: 1, paddingTop: "60px" }}>
+          {PROJECTS.map((p, i) => {
+            const isActive = activeIdx === i;
+            return (
+              <div
+                key={p.id}
+                onMouseEnter={() => setActiveIdx(i)}
+                onClick={() => setActiveIdx(i)}
+                style={{
+                  padding: "22px 32px",
+                  cursor: "pointer",
+                  borderLeft: isActive ? "2px solid #111" : "2px solid transparent",
+                  transition: "border-color 0.3s",
+                }}
+              >
+                {/* Number */}
+                <p style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.6rem",
+                  letterSpacing: "0.1em",
+                  color: isActive ? "#111" : "#bbb",
+                  marginBottom: "6px",
+                  transition: "color 0.3s"
+                }}>
+                  {p.num}
+                </p>
+                {/* Project Name */}
+                <Link href={`/projects/${p.slug}`} style={{ textDecoration: "none" }}>
+                  <p style={{
+                    fontFamily: "var(--font-sans)",
+                    fontWeight: 400,
+                    fontSize: "clamp(1.3rem, 2vw, 1.7rem)",
+                    letterSpacing: "-0.03em",
+                    color: isActive ? "#111" : "#888",
+                    lineHeight: 1.15,
+                    transition: "color 0.35s"
+                  }}>
+                    {p.title.split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" ")}
+                  </p>
+                </Link>
+              </div>
+            );
+          })}
+        </nav>
 
-  return (
-    <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-      {/* BG Images */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
+        {/* Bottom label */}
+        <div style={{ padding: "24px 32px" }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.15em", color: "#ccc" }}>
+            CALICUT · KERALA
+          </p>
+        </div>
+      </aside>
+
+      {/* ════════════════════════════════
+          RIGHT PANEL — Full-bleed Image
+      ════════════════════════════════ */}
+      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+
+        {/* Background images with crossfade */}
         <AnimatePresence mode="sync">
-          {activeIdx !== null && (
+          <motion.div
+            key={active.heroImg}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.65, ease: "easeInOut" }}
+            style={{
+              position: "absolute", inset: 0,
+              backgroundImage: `url(${active.heroImg})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </AnimatePresence>
+
+        {/* Dark gradient overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.45) 100%)",
+        }} />
+
+        {/* ── TOP RIGHT: CTA Buttons + Hamburger ── */}
+        <div style={{
+          position: "absolute", top: "28px", right: "28px",
+          display: "flex", alignItems: "center", gap: "12px", zIndex: 20
+        }}>
+          <Link href="/studio" style={{
+            padding: "10px 18px",
+            background: "rgba(20,20,20,0.75)",
+            backdropFilter: "blur(8px)",
+            color: "#fff",
+            fontFamily: "var(--font-sans)",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            letterSpacing: "0.02em",
+            borderRadius: "4px",
+            textDecoration: "none",
+            border: "1px solid rgba(255,255,255,0.15)",
+            whiteSpace: "nowrap" as const,
+            transition: "background 0.25s"
+          }}>
+            Studio Profile
+          </Link>
+          <Link href="/#contact" style={{
+            padding: "10px 18px",
+            background: "rgba(20,20,20,0.75)",
+            backdropFilter: "blur(8px)",
+            color: "#fff",
+            fontFamily: "var(--font-sans)",
+            fontSize: "0.75rem",
+            fontWeight: 500,
+            letterSpacing: "0.02em",
+            borderRadius: "4px",
+            textDecoration: "none",
+            border: "1px solid rgba(255,255,255,0.15)",
+            whiteSpace: "nowrap" as const,
+          }}>
+            Free Consultation
+          </Link>
+          {/* Hamburger */}
+          <div style={{ marginLeft: "4px", display: "flex", flexDirection: "column", gap: "5px", cursor: "pointer", padding: "10px" }}>
+            <div style={{ width: "22px", height: "2px", background: "#fff" }} />
+            <div style={{ width: "22px", height: "2px", background: "#fff" }} />
+            <div style={{ width: "22px", height: "2px", background: "#fff" }} />
+          </div>
+        </div>
+
+        {/* ── CENTER: Large Studio Name Overlay ── */}
+        <div style={{
+          position: "absolute",
+          bottom: "80px",
+          right: "0",
+          left: "0",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          paddingRight: "32px",
+          zIndex: 10,
+          pointerEvents: "none",
+        }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeIdx}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              style={{ textAlign: "right" }}
+            >
+              <div style={{
+                fontFamily: "var(--font-sans)",
+                fontWeight: 700,
+                fontSize: "clamp(4rem, 10vw, 9rem)",
+                letterSpacing: "-0.04em",
+                lineHeight: 0.85,
+                color: "#fff",
+                textTransform: "uppercase",
+              }}>
+                KALAAKARS
+              </div>
+              <div style={{
+                fontFamily: "var(--font-sans)",
+                fontWeight: 300,
+                fontSize: "clamp(1rem, 3vw, 2.4rem)",
+                letterSpacing: "0.35em",
+                color: "rgba(255,255,255,0.85)",
+                textTransform: "uppercase",
+                marginTop: "6px",
+              }}>
+                ARCHITECTURE
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* ── BOTTOM LEFT: Badge (Phius-style) ── */}
+        <div style={{
+          position: "absolute", bottom: "28px", left: "28px", zIndex: 20,
+          display: "flex", alignItems: "center", gap: "12px"
+        }}>
+          {/* Circular badge */}
+          <div style={{
+            width: "56px", height: "56px", borderRadius: "50%",
+            border: "2px solid rgba(255,255,255,0.8)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(255,255,255,0.12)",
+            backdropFilter: "blur(4px)",
+          }}>
+            <img src="/logo.svg" alt="K" style={{ width: "22px", height: "26px", objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          </div>
+          <div>
+            <p style={{ fontFamily: "var(--font-sans)", fontSize: "0.7rem", fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>kalaakars</p>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.7)", letterSpacing: "0.1em" }}>ARCHITECTURE STUDIO</p>
+          </div>
+        </div>
+
+        {/* ── BOTTOM RIGHT: Tagline ── */}
+        <div style={{
+          position: "absolute", bottom: "32px", right: "32px", zIndex: 20,
+          display: "flex", alignItems: "center", gap: "16px"
+        }}>
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.25em", color: "rgba(255,255,255,0.8)", textTransform: "uppercase" }}>
+            DESIGN DRIVEN STUDIO
+          </p>
+          <div style={{ width: "24px", height: "1px", background: "rgba(255,255,255,0.6)" }} />
+          <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.15em", color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>
+            {active.location}
+          </p>
+        </div>
+
+        {/* ── Active project label top-left of image ── */}
+        <div style={{
+          position: "absolute", top: "32px", left: "32px", zIndex: 20
+        }}>
+          <AnimatePresence mode="wait">
             <motion.div
               key={activeIdx}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.7 }}
-              style={{
-                position: "absolute", inset: 0,
-                backgroundImage: `url(${PROJECTS[activeIdx].heroImg})`,
-                backgroundSize: "cover", backgroundPosition: "center",
-              }}
-            />
-          )}
-        </AnimatePresence>
-        {/* Always visible dim overlay when hovered */}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: activeIdx !== null ? "rgba(0,0,0,0.35)" : "transparent",
-          transition: "background 0.7s"
-        }} />
-      </div>
-
-      {/* Project rows */}
-      <div style={{ position: "relative", zIndex: 10, paddingTop: "140px" }}>
-        {PROJECTS.map((p, i) => {
-          const isHovered = activeIdx === i;
-          const isDimmed = activeIdx !== null && !isHovered;
-          return (
-            <Link key={p.id} href={`/projects/${p.slug}`}>
-              <motion.div
-                onMouseEnter={() => setActiveIdx(i)}
-                onMouseLeave={() => setActiveIdx(null)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "36px 40px",
-                  borderBottom: activeIdx !== null ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(17,17,17,0.08)",
-                  cursor: "pointer",
-                  color: activeIdx !== null ? "#fff" : "#111",
-                  opacity: isDimmed ? 0.35 : 1,
-                  transition: "opacity 0.4s, color 0.4s",
-                }}
-              >
-                <div style={{ display: "flex", gap: "40px", alignItems: "baseline" }}>
-                  <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", opacity: 0.5 }}>{p.num}</span>
-                  <div>
-                    <div style={{
-                      fontFamily: "var(--font-sans)",
-                      fontSize: "clamp(2.4rem, 5vw, 5rem)",
-                      fontWeight: 400,
-                      letterSpacing: "-0.03em",
-                      lineHeight: 0.9,
-                      transform: isHovered ? "translateX(16px)" : "translateX(0)",
-                      transition: "transform 0.5s cubic-bezier(0.16,1,0.3,1)",
-                    }}>
-                      {p.title}
-                    </div>
-                    <div style={{
-                      fontFamily: "var(--font-mono)", fontSize: "0.6rem",
-                      letterSpacing: "0.18em", marginTop: "6px",
-                      opacity: isHovered ? 0.7 : 0.4, transition: "opacity 0.4s"
-                    }}>
-                      {p.subtitle}
-                    </div>
-                  </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.15em", opacity: 0.5 }}>{p.location}</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.15em", opacity: 0.4, marginTop: "3px" }}>{p.year}</div>
-                </div>
-              </motion.div>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-/* ==============================
-   STUDIO INTRO
-============================== */
-function StudioIntro() {
-  return (
-    <section style={{ padding: "160px 40px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "80px" }}>
-      <div>
-        <p className="u-label" style={{ marginBottom: "40px" }}>The Practice</p>
-        <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "clamp(2rem, 4vw, 3.5rem)", letterSpacing: "-0.04em", lineHeight: 1.1 }}>
-          We believe in the<br />architecture of restraint.
-        </h2>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-        <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "1.15rem", lineHeight: 1.7, color: "#444", maxWidth: "520px" }}>
-          Kalaakars is a Calicut-based studio working at the intersection of Kerala's spatial traditions and structural innovation. From the Malabar coast to the highlands of Wayanad, we design residences, cultural buildings, and landscapes rooted in the monsoon landscape of Kerala.
-        </p>
-        <Link href="/studio" style={{ marginTop: "48px", display: "inline-flex", alignItems: "center", gap: "12px", fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.15em", color: "#111" }}>
-          <span>STUDIO PROFILE</span>
-          <svg width="20" height="8" viewBox="0 0 20 8" fill="none"><path d="M0 4H18M15 1l3 3-3 3" stroke="currentColor" strokeWidth="1" /></svg>
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-/* ==============================
-   FOOTER
-============================== */
-function HomeFooter() {
-  return (
-    <footer style={{ padding: "80px 40px 60px", borderTop: "1px solid #EBEBEB" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div>
-          <p className="u-label" style={{ marginBottom: "20px" }}>Contact</p>
-          <a href="mailto:hello@kalaakars.in" style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "1.4rem", letterSpacing: "-0.02em" }}>
-            hello@kalaakars.in
-          </a>
+              transition={{ duration: 0.4 }}
+            >
+              <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.25em", color: "rgba(255,255,255,0.6)", marginBottom: "4px" }}>
+                {active.category} · {active.year}
+              </p>
+              <Link href={`/projects/${active.slug}`} style={{
+                fontFamily: "var(--font-sans)", fontWeight: 400,
+                fontSize: "0.9rem", color: "#fff",
+                letterSpacing: "-0.01em", textDecoration: "none",
+                borderBottom: "1px solid rgba(255,255,255,0.4)",
+                paddingBottom: "2px"
+              }}>
+                View Project →
+              </Link>
+            </motion.div>
+          </AnimatePresence>
         </div>
-        <div style={{ display: "flex", gap: "40px" }}>
-          {["Instagram", "LinkedIn", "Behance"].map(s => (
-            <a key={s} href="#" className="u-mono" style={{ color: "#999" }}>{s}</a>
-          ))}
-        </div>
-      </div>
-      <div style={{ marginTop: "80px", paddingTop: "30px", borderTop: "1px solid #F0F0F0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span className="u-label">© 2024 Kalaakars Architecture Studio</span>
-        <span className="u-label">Calicut (Kozhikode), Kerala</span>
-      </div>
-    </footer>
-  );
-}
 
-/* ==============================
-   HOME PAGE
-============================== */
-export default function HomePage() {
-  return (
-    <main style={{ background: "#fff" }}>
-      <Navbar />
-      <HeroProjectList />
-      <StudioIntro />
-      <HomeFooter />
+      </div>
     </main>
   );
 }

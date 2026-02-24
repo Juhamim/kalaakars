@@ -16,6 +16,32 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
     {
+        id: "00",
+        slug: "beach-house-calicut",
+        num: "00",
+        title: "BEACH HOUSE CALICUT",
+        subtitle: "Residential",
+        category: "RESIDENTIAL",
+        location: "CALICUT, KL",
+        year: "2024",
+        heroImg: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2400&auto=format&fit=crop",
+        gallery: [
+            { src: "https://images.unsplash.com/photo-1600585154340-be6199f7c096?q=80&w=2400&auto=format&fit=crop", span: "half" },
+            { src: "https://images.unsplash.com/photo-1600607687939-ce8a6c349fbd?q=80&w=2400&auto=format&fit=crop", span: "half" },
+            { src: "https://images.unsplash.com/photo-1554995207-c18c203602cb?q=80&w=2400&auto=format&fit=crop", span: "full" },
+        ],
+        specs: [
+            { label: "Status", value: "Completed" },
+            { label: "Client", value: "Private" },
+            { label: "Program", value: "Beach Residence" },
+            { label: "Area", value: "4,200 sq.ft" },
+            { label: "Year", value: "2024" },
+            { label: "Principal", value: "Ar. Vishal Sharma" },
+        ],
+        story: `Perched between the Arabian Sea and the coconut groves of Calicut's shoreline, Beach House responds to the rhythm of the Malabar coast. The structure is oriented to capture the dominant southwest monsoon breeze while shading the interior from the harsh afternoon sun.`,
+        pullQuote: "Every good building begins by listening to the land.",
+    },
+    {
         id: "01",
         slug: "grand-ridge-drive",
         num: "01",
@@ -40,7 +66,7 @@ export const PROJECTS: Project[] = [
             { label: "Year", value: "2024" },
             { label: "Principal", value: "Ar. Vishal Sharma" },
         ],
-        story: `Located on a prominent ridge in Calicut's hilly terrain, this residence dissolves the boundary between architecture and the lush Kerala landscape. Every decision — from the orientation of the primary volume to the placement of each aperture — was made in service of framing the Malabar coastline and managing the monsoon light.`,
+        story: "Located on a prominent ridge in Calicut's hilly terrain, this residence dissolves the boundary between architecture and the lush Kerala landscape. Every decision was made in service of framing the Malabar coastline and managing the monsoon light.",
         pullQuote: "Architecture is not about form. It is about the nature of space.",
     },
     {
@@ -66,7 +92,7 @@ export const PROJECTS: Project[] = [
             { label: "Year", value: "2025" },
             { label: "Principal", value: "Ar. Ayaan Kapoor" },
         ],
-        story: `Set in the heart of Kozhikode's urban fabric, Void Atrium reimagines the modern workspace as a sanctuary of light informed by Kerala's deep tradition of courtyard architecture — the nalukettu. By hollowing out the core of a six-story structure, we've created a vertical landscape that breathes with the monsoon and adapts to the arc of the sun.`,
+        story: "Set in the heart of Kozhikode's urban fabric, Void Atrium reimagines the modern workspace as a sanctuary of light informed by Kerala's deep tradition of nalukettu courtyard architecture.",
         pullQuote: "The void is the most powerful architectural element.",
     },
     {
@@ -92,7 +118,7 @@ export const PROJECTS: Project[] = [
             { label: "Year", value: "2025" },
             { label: "Principal", value: "Ar. Vishal Sharma" },
         ],
-        story: `Malabar House is a cultural center conceived as an instrument of the Kerala coast — a building that makes the invisible traditions of Malabar visible. Its form is derived from the study of monsoon light, trade wind patterns, and the historic spice routes of Kozhikode, resulting in a structure that functions simultaneously as landmark, archive, and public gathering space.`,
+        story: "Malabar House is a cultural center conceived as an instrument of the Kerala coast — a building that makes the invisible traditions of Malabar visible and tangible for future generations.",
         pullQuote: "To build in Kerala is to listen to the monsoon first.",
     },
     {
@@ -118,7 +144,7 @@ export const PROJECTS: Project[] = [
             { label: "Year", value: "2024" },
             { label: "Principal", value: "Ar. Ayaan Kapoor" },
         ],
-        story: `Situated at the edge of Fort Kochi's backwaters, this pavilion is an act of extreme restraint. Drawing from the Chinese fishing nets and Portuguese fort heritage of the Kerala coast, the structure presents the minimum necessary mass to provide shelter and frame the water — a delicate mediator between the human body and the Arabian Sea.`,
+        story: "Situated at the edge of Fort Kochi's backwaters, this pavilion draws from the Chinese fishing nets and Portuguese fort heritage of the Kerala coast — a delicate mediator between the human body and the Arabian Sea.",
         pullQuote: "The best building is the one you don't see.",
     },
 ];
