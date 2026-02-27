@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  num       String
+  title     String
+  subtitle  String
+  category  String
+  location  String
+  year      String
+  heroImg   String
+  story     String
+  pullQuote String?
+  
+  gallery   GalleryImage[]
+  specs     Spec[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GalleryImage {
+  id        String  @id @default(uuid())
+  src       String
+  span      String  // "full" | "half"
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Spec {
+  id        String  @id @default(uuid())
+  label     String
+  value     String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
