@@ -109,3 +109,32 @@ insert into public.specs (project_id, label, value) values
   ('03', 'Status', 'Design Development'), ('03', 'Client', 'City of Calicut'), ('03', 'Area', '48,000 sq.ft'), ('03', 'Year', '2025'), ('03', 'Principal', 'Ar. Vishal Sharma'),
   ('04', 'Status', 'Completed'), ('04', 'Client', 'Private'), ('04', 'Area', '3,200 sq.ft'), ('04', 'Year', '2024'), ('04', 'Principal', 'Ar. Ayaan Kapoor')
 on conflict do nothing;
+
+-- ============================================================
+--  Supabase Storage — project-images bucket
+--  Run this in the SQL Editor too
+-- ============================================================
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'project-images',
+  'project-images',
+  true,
+  10485760,   -- 10 MB max per file
+  array['image/jpeg','image/png','image/webp','image/gif','image/avif']
+)
+on conflict (id) do nothing;
+
+-- Allow anyone to read (bucket is public)
+create policy "Public read project-images"
+  on storage.objects for select
+  using ( bucket_id = 'project-images' );
+
+-- Allow service-role (our server) to upload
+create policy "Service upload project-images"
+  on storage.objects for insert
+  with check ( bucket_id = 'project-images' );
+
+-- Allow service-role to delete
+create policy "Service delete project-images"
+  on storage.objects for delete
+  using ( bucket_id = 'project-images' );

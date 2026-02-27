@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* ═══════════════════════════════════════
@@ -31,6 +31,134 @@ const EMPTY_PROJECT: Project = {
 };
 
 const CATEGORIES = ["RESIDENTIAL", "COMMERCIAL", "CULTURAL", "LANDSCAPE", "HOSPITALITY"];
+
+/* ═══════════════════════════════════════
+   IMAGE INPUT  (URL + local upload)
+═══════════════════════════════════════ */
+function ImageInput({
+    value,
+    onChange,
+    placeholder = "https://…",
+    preview = true,
+    compact = false,
+}: {
+    value: string;
+    onChange: (url: string) => void;
+    placeholder?: string;
+    preview?: boolean;
+    compact?: boolean;
+}) {
+    const [uploading, setUploading] = useState(false);
+    const [tab, setTab] = useState<"url" | "upload">("url");
+    const [dragOver, setDragOver] = useState(false);
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const inputStyle: React.CSSProperties = {
+        width: "100%", background: "#111",
+        border: "1px solid rgba(255,255,255,0.12)", color: "#fff",
+        padding: "11px 14px", fontFamily: "var(--font-sans)", fontSize: "0.82rem",
+        outline: "none", boxSizing: "border-box",
+    };
+    const tabBtn = (active: boolean): React.CSSProperties => ({
+        padding: compact ? "4px 10px" : "5px 14px",
+        background: active ? "rgba(212,165,32,0.15)" : "transparent",
+        border: `1px solid ${active ? "rgba(212,165,32,0.4)" : "rgba(255,255,255,0.1)"}`,
+        color: active ? "#D4A520" : "rgba(255,255,255,0.4)",
+        fontFamily: "var(--font-mono)", fontSize: "0.48rem", letterSpacing: "0.12em",
+        cursor: "pointer",
+    });
+
+    const upload = async (file: File) => {
+        if (!file) return;
+        setUploading(true);
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        const json = await res.json();
+        if (json.url) onChange(json.url);
+        else alert(json.error ?? "Upload failed");
+        setUploading(false);
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const f = e.target.files?.[0];
+        if (f) upload(f);
+        e.target.value = "";
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        const f = e.dataTransfer.files?.[0];
+        if (f) { setTab("upload"); upload(f); }
+    };
+
+    return (
+        <div>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: "6px", marginBottom: "8px" }}>
+                <button type="button" onClick={() => setTab("url")} style={tabBtn(tab === "url")}>URL</button>
+                <button type="button" onClick={() => setTab("upload")} style={tabBtn(tab === "upload")}>↑ UPLOAD</button>
+            </div>
+
+            {tab === "url" ? (
+                <input
+                    value={value}
+                    onChange={e => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    style={inputStyle}
+                />
+            ) : (
+                <div
+                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    onClick={() => !uploading && fileRef.current?.click()}
+                    style={{
+                        border: `1px dashed ${dragOver ? "#D4A520" : "rgba(255,255,255,0.2)"}`,
+                        background: dragOver ? "rgba(212,165,32,0.05)" : "rgba(255,255,255,0.02)",
+                        padding: compact ? "14px" : "22px",
+                        textAlign: "center", cursor: uploading ? "wait" : "pointer",
+                        transition: "border-color 0.2s, background 0.2s",
+                    }}
+                >
+                    <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+                    {uploading ? (
+                        <div>
+                            <div style={{ width: "100%", height: "3px", background: "rgba(255,255,255,0.06)", marginBottom: "10px" }}>
+                                <motion.div
+                                    animate={{ x: ["-100%", "100%"] }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                    style={{ height: "100%", width: "40%", background: "#D4A520" }}
+                                />
+                            </div>
+                            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "#D4A520", letterSpacing: "0.15em" }}>UPLOADING…</p>
+                        </div>
+                    ) : (
+                        <>
+                            <p style={{ fontFamily: "var(--font-mono)", fontSize: compact ? "0.55rem" : "0.65rem", color: "rgba(255,255,255,0.35)", letterSpacing: "0.12em", marginBottom: "4px" }}>
+                                {dragOver ? "DROP TO UPLOAD" : "CLICK OR DRAG & DROP"}
+                            </p>
+                            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.45rem", color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em" }}>JPEG · PNG · WEBP · GIF · AVIF · MAX 10 MB</p>
+                            {value && !compact && (
+                                <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.45rem", color: "#D4A520", letterSpacing: "0.08em", marginTop: "8px", wordBreak: "break-all" }}>
+                                    ✓ {value.split("/").pop()}
+                                </p>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* Live preview */}
+            {preview && value && !compact && (
+                <div style={{ marginTop: "10px", height: "160px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={value} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+            )}
+        </div>
+    );
+}
 
 /* ═══════════════════════════════════════
    TOAST
@@ -103,7 +231,6 @@ function ProjectForm({
     const [saving, setSaving] = useState(false);
 
     const set = (k: keyof Project, v: unknown) => setForm(f => ({ ...f, [k]: v }));
-
     const setGallery = (val: GalleryImage[]) => set("gallery", val);
     const setSpecs = (val: Spec[]) => set("specs", val);
 
@@ -123,9 +250,14 @@ function ProjectForm({
         display: "block", fontFamily: "var(--font-mono)", fontSize: "0.5rem",
         letterSpacing: "0.18em", color: "rgba(255,255,255,0.4)", marginBottom: "6px",
     };
+    const sectionLabel: React.CSSProperties = {
+        fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em",
+        color: "rgba(255,255,255,0.25)", marginBottom: "20px",
+        borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "10px",
+    };
 
     return (
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0", height: "100%", overflow: "hidden" }}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
             {/* Form header */}
             <div style={{ padding: "24px 32px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
                 <div>
@@ -133,33 +265,34 @@ function ProjectForm({
                         {initial.slug ? "EDIT PROJECT" : "NEW PROJECT"}
                     </p>
                     <h2 style={{ fontFamily: "var(--font-sans)", fontWeight: 400, fontSize: "1.3rem", color: "#fff", letterSpacing: "-0.02em" }}>
-                        {initial.title || "Untitled Project"}
+                        {form.title || "Untitled Project"}
                     </h2>
                 </div>
                 <div style={{ display: "flex", gap: "12px" }}>
                     <button type="button" onClick={onCancel} style={{ padding: "10px 20px", background: "transparent", border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", cursor: "pointer" }}>CANCEL</button>
                     <button type="submit" disabled={saving} style={{ padding: "10px 24px", background: saving ? "#333" : "#D4A520", border: "none", color: "#000", fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", fontWeight: 700, cursor: saving ? "not-allowed" : "pointer" }}>
-                        {saving ? "SAVING..." : "SAVE PROJECT"}
+                        {saving ? "SAVING…" : "SAVE PROJECT"}
                     </button>
                 </div>
             </div>
 
-            {/* Scrollable form body */}
+            {/* Scrollable body */}
             <div style={{ flex: 1, overflowY: "auto", padding: "32px" }}>
-                {/* ── Core fields ── */}
+
+                {/* BASIC INFO */}
                 <section style={{ marginBottom: "40px" }}>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "10px" }}>BASIC INFO</p>
+                    <p style={sectionLabel}>BASIC INFO</p>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                         {[
-                            { key: "title", label: "TITLE", placeholder: "BEACH HOUSE CALICUT" },
-                            { key: "slug", label: "SLUG (URL)", placeholder: "beach-house-calicut" },
+                            { key: "title", label: "TITLE", placeholder: "BEACH HOUSE CALICUT", required: true },
+                            { key: "slug", label: "SLUG (URL)", placeholder: "beach-house-calicut", required: true },
                             { key: "num", label: "NUMBER", placeholder: "00" },
                             { key: "subtitle", label: "SUBTITLE", placeholder: "Residential" },
-                        ].map(({ key, label, placeholder }) => (
+                        ].map(({ key, label, placeholder, required }) => (
                             <div key={key}>
                                 <label style={labelStyle}>{label}</label>
                                 <input
-                                    required={key === "title" || key === "slug"}
+                                    required={required}
                                     value={String(form[key as keyof Project] ?? "")}
                                     onChange={e => set(key as keyof Project, e.target.value)}
                                     placeholder={placeholder}
@@ -185,24 +318,20 @@ function ProjectForm({
                     </div>
                 </section>
 
-                {/* ── Hero image ── */}
+                {/* HERO IMAGE */}
                 <section style={{ marginBottom: "40px" }}>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "10px" }}>HERO IMAGE</p>
-                    <div>
-                        <label style={labelStyle}>IMAGE URL</label>
-                        <input value={form.hero_img} onChange={e => set("hero_img", e.target.value)} placeholder="https://images.unsplash.com/…" style={inputStyle} />
-                    </div>
-                    {form.hero_img && (
-                        <div style={{ marginTop: "12px", height: "180px", borderRadius: "2px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.08)" }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={form.hero_img} alt="Hero preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        </div>
-                    )}
+                    <p style={sectionLabel}>HERO IMAGE</p>
+                    <ImageInput
+                        value={form.hero_img}
+                        onChange={url => set("hero_img", url)}
+                        placeholder="https://images.unsplash.com/…"
+                        preview
+                    />
                 </section>
 
-                {/* ── Story & Quote ── */}
+                {/* NARRATIVE */}
                 <section style={{ marginBottom: "40px" }}>
-                    <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "10px" }}>NARRATIVE</p>
+                    <p style={sectionLabel}>NARRATIVE</p>
                     <div style={{ marginBottom: "16px" }}>
                         <label style={labelStyle}>PROJECT STORY</label>
                         <textarea
@@ -219,44 +348,71 @@ function ProjectForm({
                     </div>
                 </section>
 
-                {/* ── Gallery ── */}
+                {/* GALLERY */}
                 <section style={{ marginBottom: "40px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "10px" }}>
-                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)" }}>GALLERY IMAGES ({(form.gallery ?? []).length})</p>
-                        <button type="button" onClick={() => setGallery([...(form.gallery ?? []), { src: "", span: "half" }])}
+                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)" }}>
+                            GALLERY IMAGES ({(form.gallery ?? []).length})
+                        </p>
+                        <button type="button"
+                            onClick={() => setGallery([...(form.gallery ?? []), { src: "", span: "half" }])}
                             style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.1em", padding: "5px 12px", cursor: "pointer" }}>
-                            + ADD IMAGE
+                            + ADD SLOT
                         </button>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                         {(form.gallery ?? []).map((img, i) => (
-                            <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: "10px", alignItems: "center", background: "rgba(255,255,255,0.03)", padding: "12px", border: "1px solid rgba(255,255,255,0.07)" }}>
-                                <input
+                            <div key={i} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", padding: "16px" }}>
+                                {/* Row: index + span selector + remove */}
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                                    <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.48rem", color: "rgba(255,255,255,0.25)", letterSpacing: "0.1em" }}>IMAGE {i + 1}</span>
+                                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                                        <label style={{ fontFamily: "var(--font-mono)", fontSize: "0.45rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>SPAN</label>
+                                        <select
+                                            value={img.span}
+                                            onChange={e => { const g = [...(form.gallery ?? [])]; g[i] = { ...g[i], span: e.target.value as "full" | "half" }; setGallery(g); }}
+                                            style={{ background: "#111", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", padding: "4px 8px", fontFamily: "var(--font-mono)", fontSize: "0.5rem", outline: "none" }}
+                                        >
+                                            <option value="half">Half</option>
+                                            <option value="full">Full</option>
+                                        </select>
+                                        <button type="button"
+                                            onClick={() => setGallery((form.gallery ?? []).filter((_, j) => j !== i))}
+                                            style={{ background: "transparent", border: "1px solid rgba(220,50,50,0.3)", color: "rgba(220,50,50,0.7)", width: "28px", height: "28px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem" }}>✕</button>
+                                    </div>
+                                </div>
+                                {/* Image input with upload */}
+                                <ImageInput
                                     value={img.src}
-                                    onChange={e => { const g = [...(form.gallery ?? [])]; g[i] = { ...g[i], src: e.target.value }; setGallery(g); }}
-                                    placeholder="https://images.unsplash.com/…"
-                                    style={{ ...inputStyle, fontSize: "0.75rem" }}
+                                    onChange={url => {
+                                        const g = [...(form.gallery ?? [])];
+                                        g[i] = { ...g[i], src: url };
+                                        setGallery(g);
+                                    }}
+                                    preview={false}
+                                    compact
                                 />
-                                <select
-                                    value={img.span}
-                                    onChange={e => { const g = [...(form.gallery ?? [])]; g[i] = { ...g[i], span: e.target.value as "full" | "half" }; setGallery(g); }}
-                                    style={{ ...inputStyle, width: "80px", fontSize: "0.7rem" }}
-                                >
-                                    <option value="half">Half</option>
-                                    <option value="full">Full</option>
-                                </select>
-                                <button type="button" onClick={() => setGallery((form.gallery ?? []).filter((_, j) => j !== i))}
-                                    style={{ background: "transparent", border: "1px solid rgba(220,50,50,0.3)", color: "rgba(220,50,50,0.7)", width: "32px", height: "32px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                                {/* Compact thumbnail */}
+                                {img.src && (
+                                    <div style={{ marginTop: "8px", height: "80px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={img.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
                 </section>
 
-                {/* ── Specs ── */}
+                {/* SPECS */}
                 <section style={{ marginBottom: "40px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: "10px" }}>
-                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)" }}>PROJECT SPECS ({(form.specs ?? []).length})</p>
-                        <button type="button" onClick={() => setSpecs([...(form.specs ?? []), { label: "", value: "" }])}
+                        <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.25)" }}>
+                            PROJECT SPECS ({(form.specs ?? []).length})
+                        </p>
+                        <button type="button"
+                            onClick={() => setSpecs([...(form.specs ?? []), { label: "", value: "" }])}
                             style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.1em", padding: "5px 12px", cursor: "pointer" }}>
                             + ADD SPEC
                         </button>
@@ -352,7 +508,7 @@ export default function AdminPage() {
         return matchSearch && matchCat;
     });
 
-    /* ── Login Screen ── */
+    /* ── LOGIN ── */
     if (!authed) {
         return (
             <div style={{ minHeight: "100vh", background: "#090909", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
@@ -365,27 +521,14 @@ export default function AdminPage() {
                             <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(255,255,255,0.3)" }}>ADMIN CMS</p>
                         </div>
                     </div>
-
                     <form onSubmit={handleLogin}>
                         <p style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "1.6rem", letterSpacing: "-0.03em", color: "#fff", marginBottom: "32px", lineHeight: 1.2 }}>
                             Studio<br />Control Panel
                         </p>
                         <div style={{ marginBottom: "16px" }}>
                             <label style={{ display: "block", fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.18em", color: "rgba(255,255,255,0.4)", marginBottom: "8px" }}>ADMIN PASSWORD</label>
-                            <input
-                                type="password"
-                                value={pw}
-                                onChange={e => { setPw(e.target.value); setPwError(false); }}
-                                placeholder="Enter password"
-                                autoFocus
-                                style={{
-                                    width: "100%", background: "#111",
-                                    border: `1px solid ${pwError ? "rgba(220,50,50,0.6)" : "rgba(255,255,255,0.14)"}`,
-                                    color: "#fff", padding: "14px 16px",
-                                    fontFamily: "var(--font-sans)", fontSize: "0.9rem",
-                                    outline: "none", boxSizing: "border-box",
-                                }}
-                            />
+                            <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError(false); }} placeholder="Enter password" autoFocus
+                                style={{ width: "100%", background: "#111", border: `1px solid ${pwError ? "rgba(220,50,50,0.6)" : "rgba(255,255,255,0.14)"}`, color: "#fff", padding: "14px 16px", fontFamily: "var(--font-sans)", fontSize: "0.9rem", outline: "none", boxSizing: "border-box" }} />
                             {pwError && <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", color: "#dc3232", marginTop: "6px", letterSpacing: "0.1em" }}>Incorrect password</p>}
                         </div>
                         <button type="submit" style={{ width: "100%", padding: "14px", background: "#D4A520", border: "none", color: "#000", fontFamily: "var(--font-mono)", fontSize: "0.65rem", letterSpacing: "0.18em", fontWeight: 700, cursor: "pointer" }}>
@@ -397,11 +540,11 @@ export default function AdminPage() {
         );
     }
 
-    /* ── Dashboard ── */
+    /* ── DASHBOARD ── */
     return (
         <div style={{ minHeight: "100vh", background: "#090909", color: "#fff", display: "flex", flexDirection: "column" }}>
 
-            {/* ── Top Nav ── */}
+            {/* Top Nav */}
             <header style={{ height: "60px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", flexShrink: 0, background: "#0c0c0c" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -417,29 +560,21 @@ export default function AdminPage() {
 
             <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-                {/* ── Sidebar ── */}
+                {/* Sidebar */}
                 <aside style={{ width: "220px", borderRight: "1px solid rgba(255,255,255,0.07)", padding: "28px 0", display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0, background: "#0c0c0c" }}>
-                    {[
-                        { label: "Projects", icon: "◈", id: "projects" },
-                    ].map(item => (
-                        <button key={item.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "11px 28px", background: "rgba(212,165,32,0.08)", border: "none", borderLeft: "2px solid #D4A520", cursor: "pointer", width: "100%" }}>
-                            <span style={{ color: "#D4A520", fontSize: "1rem" }}>{item.icon}</span>
-                            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", color: "#fff" }}>{item.label}</span>
-                        </button>
-                    ))}
-
+                    <button style={{ display: "flex", alignItems: "center", gap: "12px", padding: "11px 28px", background: "rgba(212,165,32,0.08)", border: "none", borderLeft: "2px solid #D4A520", cursor: "pointer", width: "100%" }}>
+                        <span style={{ color: "#D4A520", fontSize: "1rem" }}>◈</span>
+                        <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.1em", color: "#fff" }}>Projects</span>
+                    </button>
                     <div style={{ marginTop: "auto", padding: "24px 28px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
                         <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.48rem", color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em", lineHeight: 1.8 }}>
-                            KALAAKARS CMS<br />
-                            CALICUT · KERALA<br />
-                            EST. 2019
+                            KALAAKARS CMS<br />CALICUT · KERALA<br />EST. 2019
                         </p>
                     </div>
                 </aside>
 
-                {/* ── Main content ── */}
+                {/* Main */}
                 <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-
                     <AnimatePresence mode="wait">
                         {view === "form" ? (
                             <motion.div key="form" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -459,13 +594,13 @@ export default function AdminPage() {
                                             <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.2em", color: "#D4A520", marginBottom: "6px" }}>PROJECTS MANAGER</p>
                                             <h1 style={{ fontFamily: "var(--font-sans)", fontWeight: 300, fontSize: "1.8rem", letterSpacing: "-0.04em", color: "#fff" }}>All Projects</h1>
                                         </div>
-                                        <button
-                                            onClick={() => { setEditing(null); setView("form"); }}
-                                            style={{ padding: "12px 24px", background: "#D4A520", border: "none", color: "#000", fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", marginTop: "4px" }}
-                                        >+ NEW PROJECT</button>
+                                        <button onClick={() => { setEditing(null); setView("form"); }}
+                                            style={{ padding: "12px 24px", background: "#D4A520", border: "none", color: "#000", fontFamily: "var(--font-mono)", fontSize: "0.6rem", letterSpacing: "0.12em", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", marginTop: "4px" }}>
+                                            + NEW PROJECT
+                                        </button>
                                     </div>
 
-                                    {/* Stats row */}
+                                    {/* Stats */}
                                     <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
                                         <StatCard label="TOTAL PROJECTS" value={projects.length} accent />
                                         <StatCard label="RESIDENTIAL" value={projects.filter(p => p.category === "RESIDENTIAL").length} />
@@ -475,25 +610,17 @@ export default function AdminPage() {
 
                                     {/* Search + filter */}
                                     <div style={{ display: "flex", gap: "12px" }}>
-                                        <input
-                                            type="text"
-                                            value={search}
-                                            onChange={e => setSearch(e.target.value)}
-                                            placeholder="Search projects…"
-                                            style={{ flex: 1, background: "#111", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "10px 14px", fontFamily: "var(--font-sans)", fontSize: "0.8rem", outline: "none" }}
-                                        />
-                                        <select
-                                            value={filterCat}
-                                            onChange={e => setFilterCat(e.target.value)}
-                                            style={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", padding: "10px 14px", fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.1em", outline: "none", appearance: "none" }}
-                                        >
+                                        <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search projects…"
+                                            style={{ flex: 1, background: "#111", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "10px 14px", fontFamily: "var(--font-sans)", fontSize: "0.8rem", outline: "none" }} />
+                                        <select value={filterCat} onChange={e => setFilterCat(e.target.value)}
+                                            style={{ background: "#111", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)", padding: "10px 14px", fontFamily: "var(--font-mono)", fontSize: "0.55rem", letterSpacing: "0.1em", outline: "none", appearance: "none" }}>
                                             <option value="ALL">ALL CATEGORIES</option>
                                             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
                                 </div>
 
-                                {/* Project table */}
+                                {/* Table */}
                                 <div style={{ flex: 1, overflowY: "auto" }}>
                                     {loading ? (
                                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px" }}>
@@ -502,27 +629,19 @@ export default function AdminPage() {
                                     ) : filtered.length === 0 ? (
                                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px", flexDirection: "column", gap: "12px" }}>
                                             <p style={{ fontFamily: "var(--font-sans)", fontSize: "1.2rem", color: "rgba(255,255,255,0.3)" }}>No projects found</p>
-                                            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em" }}>Try adjusting your search or create a new project</p>
+                                            <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.2)", letterSpacing: "0.1em" }}>Adjust your search or create a new project</p>
                                         </div>
                                     ) : (
                                         <>
-                                            {/* Table header */}
-                                            <div style={{ display: "grid", gridTemplateColumns: "48px 1fr 120px 100px 80px 120px", gap: "0", padding: "12px 32px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                            <div style={{ display: "grid", gridTemplateColumns: "48px 1fr 120px 100px 80px 120px", padding: "12px 32px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                                                 {["#", "TITLE", "CATEGORY", "LOCATION", "YEAR", "ACTIONS"].map(h => (
                                                     <span key={h} style={{ fontFamily: "var(--font-mono)", fontSize: "0.48rem", letterSpacing: "0.18em", color: "rgba(255,255,255,0.25)" }}>{h}</span>
                                                 ))}
                                             </div>
-
                                             {filtered.map((p, i) => (
-                                                <motion.div
-                                                    key={p.id ?? p.slug}
-                                                    initial={{ opacity: 0, y: 8 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ delay: i * 0.04 }}
-                                                    style={{ display: "grid", gridTemplateColumns: "48px 1fr 120px 100px 80px 120px", gap: "0", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,0.05)", alignItems: "center" }}
-                                                >
+                                                <motion.div key={p.id ?? p.slug} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+                                                    style={{ display: "grid", gridTemplateColumns: "48px 1fr 120px 100px 80px 120px", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,0.05)", alignItems: "center" }}>
                                                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>{p.num}</span>
-
                                                     <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0 }}>
                                                         {p.hero_img && (
                                                             <div style={{ width: "48px", height: "36px", borderRadius: "2px", overflow: "hidden", flexShrink: 0 }}>
@@ -537,11 +656,9 @@ export default function AdminPage() {
                                                             <p style={{ fontFamily: "var(--font-mono)", fontSize: "0.48rem", color: "rgba(255,255,255,0.25)", letterSpacing: "0.08em", marginTop: "2px" }}>/{p.slug}</p>
                                                         </div>
                                                     </div>
-
                                                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)" }}>{p.category}</span>
                                                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.5rem", letterSpacing: "0.07em", color: "rgba(255,255,255,0.35)" }}>{p.location}</span>
                                                     <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.5)" }}>{p.year}</span>
-
                                                     <div style={{ display: "flex", gap: "8px" }}>
                                                         <button onClick={() => { setEditing(p); setView("form"); }}
                                                             style={{ padding: "6px 12px", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-mono)", fontSize: "0.48rem", letterSpacing: "0.1em", cursor: "pointer" }}>EDIT</button>
@@ -559,14 +676,10 @@ export default function AdminPage() {
                 </main>
             </div>
 
-            {/* Delete confirm modal */}
+            {/* Delete modal */}
             <AnimatePresence>
                 {deleteTarget && (
-                    <DeleteModal
-                        title={deleteTarget.title}
-                        onConfirm={() => handleDelete(deleteTarget)}
-                        onCancel={() => setDeleteTarget(null)}
-                    />
+                    <DeleteModal title={deleteTarget.title} onConfirm={() => handleDelete(deleteTarget)} onCancel={() => setDeleteTarget(null)} />
                 )}
             </AnimatePresence>
 
