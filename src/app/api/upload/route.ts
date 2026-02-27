@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
+
+// Configure Cloudinary from Environment Variables
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true, // Use HTTPS
+});
 
 const MAX_MB = 10;
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
-const EXT_MAP: Record<string, string> = {
-    "image/jpeg": "jpg",
-    "image/png": "png",
-    "image/webp": "webp",
-    "image/gif": "gif",
-    "image/avif": "avif",
-};
 
 export async function POST(req: Request) {
     let formData: FormData;
@@ -26,10 +26,18 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    // Ensure Cloudinary is actually configured
+    if (!process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME === "your_cloud_name") {
+        return NextResponse.json(
+            { error: "Cloudinary is not configured in .env.local yet." },
+            { status: 500 }
+        );
+    }
+
     // Validate type
     if (!ALLOWED.includes(file.type)) {
         return NextResponse.json(
-            { error: `Unsupported file type: ${file.type}. Allowed: JPEG, PNG, WebP, GIF, AVIF` },
+            { error: `Unsupported file type. Allowed: JPEG, PNG, WebP, GIF, AVIF` },
             { status: 415 }
         );
     }
@@ -42,23 +50,38 @@ export async function POST(req: Request) {
         );
     }
 
-    const ext = EXT_MAP[file.type] ?? "jpg";
-    const safeName = file.name
-        .replace(/\.[^.]+$/, "")
-        .replace(/[^a-zA-Z0-9-_]/g, "-")
-        .toLowerCase()
-        .slice(0, 60);
-    const filename = `${Date.now()}-${safeName}.${ext}`;
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-    // Ensure uploads dir exists inside public/
-    const uploadDir = join(process.cwd(), "public", "uploads");
-    await mkdir(uploadDir, { recursive: true });
+        // Promise wrapper for Cloudinary stream upload
+        const uploadToCloudinary = () => {
+            return new Promise<UploadApiResponse>((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: "kalaakars", // Store all uploads in a folder
+                        format: "webp", // Automatically convert to WebP for optimization
+                        quality: "auto", // Auto-compress without losing visible quality
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result as UploadApiResponse);
+                    }
+                );
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(join(uploadDir, filename), buffer);
+                uploadStream.end(buffer);
+            });
+        };
 
-    // Return the public URL (served as a static asset by Next.js)
-    const url = `/uploads/${filename}`;
-    return NextResponse.json({ url });
+        const uploadResult = await uploadToCloudinary();
+
+        // Return the secure, optimized Cloudinary URL
+        return NextResponse.json({ url: uploadResult.secure_url });
+    } catch (error: any) {
+        console.error("Cloudinary Upload Error:", error);
+        return NextResponse.json(
+            { error: error?.message ?? "Cloudinary upload failed" },
+            { status: 500 }
+        );
+    }
 }
