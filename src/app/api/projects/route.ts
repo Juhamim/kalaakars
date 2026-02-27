@@ -1,38 +1,48 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
-    const { data: projects, error } = await supabaseAdmin
-        .from("projects")
-        .select("*, gallery_images(*), specs(*)")
-        .order("num", { ascending: true });
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(projects);
+    try {
+        const projects = await prisma.project.findMany({
+            include: { gallery: true, specs: true },
+            orderBy: { num: "asc" },
+        });
+        const mapped = projects.map(p => ({
+            ...p,
+            hero_img: p.heroImg,
+            pull_quote: p.pullQuote,
+        }));
+        return NextResponse.json(mapped);
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
+    }
 }
 
 export async function POST(req: Request) {
-    const body = await req.json();
-    const { gallery, specs, ...data } = body;
+    try {
+        const body = await req.json();
+        const { gallery, specs, ...data } = body;
 
-    const { data: project, error } = await supabaseAdmin
-        .from("projects")
-        .insert(data)
-        .select()
-        .single();
+        const project = await prisma.project.create({
+            data: {
+                slug: data.slug,
+                num: data.num,
+                title: data.title,
+                subtitle: data.subtitle,
+                category: data.category,
+                location: data.location,
+                year: data.year,
+                heroImg: data.hero_img || data.heroImg,
+                story: data.story,
+                pullQuote: data.pull_quote || data.pullQuote,
+                gallery: { create: gallery ?? [] },
+                specs: { create: specs ?? [] },
+            },
+            include: { gallery: true, specs: true },
+        });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    if (gallery?.length) {
-        await supabaseAdmin.from("gallery_images").insert(
-            gallery.map((g: { src: string; span: string }) => ({ ...g, project_id: project.id }))
-        );
+        return NextResponse.json(project, { status: 201 });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
-    if (specs?.length) {
-        await supabaseAdmin.from("specs").insert(
-            specs.map((s: { label: string; value: string }) => ({ ...s, project_id: project.id }))
-        );
-    }
-
-    return NextResponse.json(project, { status: 201 });
 }

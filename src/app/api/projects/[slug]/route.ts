@@ -1,64 +1,81 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import prisma from "@/lib/prisma";
 
 export async function GET(
     _req: Request,
     { params }: { params: Promise<{ slug: string }> }
 ) {
-    const { slug } = await params;
-    const { data, error } = await supabaseAdmin
-        .from("projects")
-        .select("*, gallery_images(*), specs(*)")
-        .eq("slug", slug)
-        .single();
+    try {
+        const { slug } = await params;
+        const project = await prisma.project.findUnique({
+            where: { slug },
+            include: { gallery: true, specs: true },
+        });
 
-    if (error) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json(data);
+        if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+        // Map Prisma camelCase to the old Supabase snake_case keys the frontend expects
+        return NextResponse.json({
+            ...project,
+            hero_img: project.heroImg,
+            pull_quote: project.pullQuote,
+        });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
+    }
 }
 
 export async function PUT(
     req: Request,
     { params }: { params: Promise<{ slug: string }> }
 ) {
-    const { slug } = await params;
-    const body = await req.json();
-    const { gallery, specs, id, created_at, updated_at, gallery_images, ...data } = body;
+    try {
+        const { slug } = await params;
+        const body = await req.json();
+        const { gallery, specs, id, createdAt, updatedAt, created_at, updated_at, gallery_images, ...data } = body;
 
-    // Update main project row
-    const { data: project, error } = await supabaseAdmin
-        .from("projects")
-        .update(data)
-        .eq("slug", slug)
-        .select()
-        .single();
+        // Delete old relations and re-create
+        await prisma.galleryImage.deleteMany({ where: { project: { slug } } });
+        await prisma.spec.deleteMany({ where: { project: { slug } } });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+        const project = await prisma.project.update({
+            where: { slug },
+            data: {
+                slug: data.slug,
+                num: data.num,
+                title: data.title,
+                subtitle: data.subtitle,
+                category: data.category,
+                location: data.location,
+                year: data.year,
+                heroImg: data.hero_img || data.heroImg,
+                story: data.story,
+                pullQuote: data.pull_quote || data.pullQuote,
+                gallery: { create: gallery ?? [] },
+                specs: { create: specs ?? [] },
+            },
+            include: { gallery: true, specs: true },
+        });
 
-    // Replace gallery
-    await supabaseAdmin.from("gallery_images").delete().eq("project_id", project.id);
-    if (gallery?.length) {
-        await supabaseAdmin.from("gallery_images").insert(
-            gallery.map((g: { src: string; span: string }) => ({ ...g, project_id: project.id }))
-        );
+        return NextResponse.json({
+            ...project,
+            hero_img: project.heroImg,
+            pull_quote: project.pullQuote,
+        });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
     }
-
-    // Replace specs
-    await supabaseAdmin.from("specs").delete().eq("project_id", project.id);
-    if (specs?.length) {
-        await supabaseAdmin.from("specs").insert(
-            specs.map((s: { label: string; value: string }) => ({ ...s, project_id: project.id }))
-        );
-    }
-
-    return NextResponse.json({ ...project, gallery, specs });
 }
 
 export async function DELETE(
     _req: Request,
     { params }: { params: Promise<{ slug: string }> }
 ) {
-    const { slug } = await params;
-    const { error } = await supabaseAdmin.from("projects").delete().eq("slug", slug);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true });
+    try {
+        const { slug } = await params;
+        await prisma.project.delete({ where: { slug } });
+        return NextResponse.json({ success: true });
+    } catch (err: any) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
+    }
 }
